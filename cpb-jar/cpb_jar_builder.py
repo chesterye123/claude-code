@@ -47,7 +47,8 @@ PLAN_EXP    = farg("--plan-exp", 3.6)       # 2=circle, ~4=rounded square (super
 FACETS      = iarg("--facets", iarg("--body-grooves", 18))   # vertical facets around
 PANEL_FRAC  = farg("--panel-frac", 0.85)    # fraction of each sector that's flat panel
 GROOVE_DEPTH= farg("--groove-depth", 0.12)  # V-groove depth (fraction of local radius)
-TABLE_FRAC  = farg("--table-frac", 0.55)    # flat lid table radius as fraction of crown rim
+TABLE_FRAC  = farg("--table-frac", 0.38)    # flat lid table radius (fraction of HALF_W)
+CROWN_RISE  = farg("--crown-rise", 0.060)    # how far the crown table sits above the rim
 RINGS       = iarg("--rings", 160)          # vertical resolution
 SEAM_H      = farg("--seam-h", 0.500)       # seam at dead centre (widest point)
 FOOT        = "--no-foot" not in argv       # draw a thin gold foot ring
@@ -66,13 +67,13 @@ PROFILE = [
     (0.500, 1.000),   # -- SEAM, widest, dead centre
     (0.560, 1.000),
     (0.640, 0.990),   # cushion holds width through the middle third
-    (0.720, 0.950),
-    (0.790, 0.880),
-    (0.850, 0.790),
-    (0.905, 0.685),
-    (0.950, 0.580),
-    (0.982, 0.490),   # shoulder into the crown
-    (1.000, 0.430),   # crown rim; flat table capped on above
+    (0.720, 0.965),
+    (0.790, 0.920),
+    (0.850, 0.855),
+    (0.905, 0.775),
+    (0.950, 0.690),
+    (0.982, 0.625),   # wide shoulder -> broad, shallow gem crown
+    (1.000, 0.580),   # crown rim; sawtooth arches + table capped above
 ]
 
 # ---------------------------------------------------------------- helpers
@@ -145,14 +146,26 @@ def build_crystal():
         for i in range(M):
             j = (i + 1) % M
             bm.faces.new((a[i], a[j], b[j], b[i]))
-    # crown: a ring of facets sloping up from the rim to a flat central table
+    # crown: a sawtooth of pointed arches (lid-facet tips) rising to a flat table.
+    # top ring has 3 verts per facet: aL, aR (panel edges) and V (groove valley).
     top = rings[-1]
-    tz = top[0].co.z + 0.010 * JAR_H
-    table = [bm.verts.new((v.co.x * TABLE_FRAC, v.co.y * TABLE_FRAC, tz)) for v in top]
-    for i in range(M):
-        j = (i + 1) % M
-        bm.faces.new((top[i], top[j], table[j], table[i]))   # radiating crown facets
-    bm.faces.new(list(reversed(table)))                       # flat table (monogram sits here)
+    N = FACETS
+    rim_z = top[0].co.z
+    tz = rim_z + CROWN_RISE * JAR_H
+    table = []
+    for i in range(N):
+        c = (i + 0.5) * (2 * math.pi / N)
+        r = HALF_W * TABLE_FRAC * superellipse_r(c, PLAN_EXP)
+        table.append(bm.verts.new((r * math.cos(c), r * math.sin(c), tz)))
+    for i in range(N):
+        aL, aR, V = top[3 * i], top[3 * i + 1], top[3 * i + 2]
+        aL_next = top[(3 * i + 3) % M]
+        Ti, Tn = table[i], table[(i + 1) % N]
+        bm.faces.new((aL, aR, Ti))            # up-pointing arch (facet tip)
+        bm.faces.new((aR, V, Ti))             # arch shoulder into the valley
+        bm.faces.new((V, aL_next, Tn))        # valley shoulder to next facet
+        bm.faces.new((V, Tn, Ti))             # down-pointing valley face
+    bm.faces.new(list(reversed(table)))       # flat table (monogram sits here)
     # bottom: fan the base ring to a recessed centre (rounded foot underside)
     base = rings[0]
     bctr = bm.verts.new((0, 0, -0.006 * JAR_H))

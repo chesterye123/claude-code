@@ -33,19 +33,22 @@ blender -b --factory-startup --python cpb_preview.py -- \
     --blend jar.blend --out prev
 ```
 
-## Tuning to the real jar (this is the part that needs your calipers)
+## Tuning knobs
 
-All defaults are guesses off the packshot. Measure and pass the truth:
+Measured dimensions are baked in as defaults (**70 mm tall, 63 mm wide, ratio
+0.90**, seam at dead centre). The rest is eyeballed off the photos — override any of it:
 
 ```bash
 blender -b --factory-startup --python cpb_jar_builder.py -- \
-    --height 0.083 \        # overall height, metres — MEASURE
-    --width-ratio 0.90 \    # width / height — MEASURE
-    --body-grooves 20 \     # count the vertical V-cuts off the side photo
-    --groove-depth 0.16 \   # how deep the cuts bite (fraction of radius)
-    --plan-exp 3.4 \        # 2 = circle, ~4 = rounded square; match the top-down
-    --table-facets 16 \     # radiating triangles on the lid crown
-    --seam-h 0.455 \        # height fraction of the gold seam band
+    --height 0.070 \        # overall height, metres (measured)
+    --width-ratio 0.90 \    # width / height (measured 63/70)
+    --facets 18 \           # count of vertical facets around
+    --panel-frac 0.85 \     # flat-panel width vs. groove within each facet
+    --groove-depth 0.12 \   # base V-groove depth (deepens toward crown/base)
+    --plan-exp 3.6 \        # 2 = circle, ~4 = rounded square; match the top-down
+    --table-frac 0.38 \     # flat lid table radius (fraction of half-width)
+    --crown-rise 0.06 \     # how far the crown table sits above the rim
+    --seam-h 0.50 \         # height fraction of the gold seam band
     --out jar.blend --export-glb jar.glb
 ```
 
@@ -56,17 +59,20 @@ side-profile photo screened as a background image.
 ## What's faithful vs. what still needs work
 
 **In and correct**
-- Superellipse plan (rounded square), not a cylinder — matches the top-down/open shots.
-- Deep, sharp vertical V-cuts modelled into the cross-section (flat-shaded, real facets),
-  not soft flutes — the brief's stated #1 failure mode.
-- Domed gem-cut lid table with radiating triangles + central squircle table.
-- Polished gold seam band at mid-height; gold foot ring with a radiating starburst base.
+- Measured proportions: 70 × 63 mm, ratio 0.90, seam (widest) at dead centre.
+- Superellipse plan (rounded square), not a cylinder — matches the top-down.
+- Onion/cushion silhouette: widest at the seam, lid and body both taper away.
+- Broad flat crystal facets split by narrow V-grooves that deepen toward the crown
+  and base, so facets read as a gem cut rather than flutes.
+- Cushion crown: a sawtooth of pointed arches (the lid-facet tips) rising to a flat
+  central table — the signature CPB top.
+- Polished gold seam band at dead centre; rounded crystal base + optional gold foot.
 - Ivory inner well + a domed cream surface (visible when rendered open / cut).
-- Four separate material slots (crystal / gold / ivory / cream), exact 83 mm height.
+- Four separate material slots (crystal / gold / ivory / cream), exact height.
 
-**Still approximations — tune against calipers + the full 19-photo set**
-- Facet **count and depth** are eyeballed off five photos. Count them for real.
-- The **profile curve** is interpolated from the packshot; refine from the side photo.
+**Still approximations — refine against the full photo set**
+- Facet **count** is inferred (18); confirm off a clean top-down/side.
+- The **profile curve** is interpolated from photos; refine from a straight side.
 - The **CPB monogram** on the lid is a raised boss placeholder, not the real glyph —
   add it as a decal/logo, same for the **`clé de peau BEAUTÉ / LA CRÈME` lockup**
   (model it as a decal on the body, not geometry, per the brief).
