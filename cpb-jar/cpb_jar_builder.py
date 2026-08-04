@@ -47,33 +47,38 @@ PLAN_EXP    = farg("--plan-exp", 3.6)       # 2=circle, ~4=rounded square (super
 FACETS      = iarg("--facets", iarg("--body-grooves", 18))   # vertical facets around
 PANEL_FRAC  = farg("--panel-frac", 0.85)    # fraction of each sector that's flat panel
 GROOVE_DEPTH= farg("--groove-depth", 0.12)  # V-groove depth (fraction of local radius)
-TABLE_FRAC  = farg("--table-frac", 0.38)    # flat lid table radius (fraction of HALF_W)
-CROWN_RISE  = farg("--crown-rise", 0.060)    # how far the crown table sits above the rim
+TABLE_FRAC  = farg("--table-frac", 0.40)    # flat lid table radius (fraction of HALF_W)
+CROWN_RISE  = farg("--crown-rise", 0.055)    # how far the crown table sits above the rim (shallow)
 RINGS       = iarg("--rings", 160)          # vertical resolution
 SEAM_H      = farg("--seam-h", 0.500)       # seam at dead centre (widest point)
 FOOT        = "--no-foot" not in argv       # draw a thin gold foot ring
 
 # ---------------------------------------------------------------- profile
 # (height fraction 0..1, radius as fraction of HALF_W). Onion: widest at the seam.
+# Silhouette taken from the Meshy image-to-3D reconstruction (a clean surface of
+# revolution off CPB's own packshot): a squat rounded cushion that HOLDS width
+# through the middle 60% and rounds off only near the very top and base. Kept our
+# measured 0.90 width ratio and squircle plan; parametric gem crown capped above.
 PROFILE = [
-    (0.000, 0.440),   # underside centre
-    (0.020, 0.560),   # base / foot contact
-    (0.060, 0.660),
-    (0.120, 0.780),
-    (0.190, 0.880),
-    (0.270, 0.950),
-    (0.360, 0.990),
-    (0.440, 1.000),
+    (0.000, 0.450),   # underside centre
+    (0.020, 0.535),   # base / foot contact
+    (0.060, 0.700),
+    (0.105, 0.825),
+    (0.150, 0.915),
+    (0.190, 0.950),
+    (0.250, 0.965),
+    (0.320, 0.975),
+    (0.400, 0.988),
     (0.500, 1.000),   # -- SEAM, widest, dead centre
-    (0.560, 1.000),
-    (0.640, 0.990),   # cushion holds width through the middle third
-    (0.720, 0.965),
-    (0.790, 0.920),
-    (0.850, 0.855),
-    (0.905, 0.775),
-    (0.950, 0.690),
-    (0.982, 0.625),   # wide shoulder -> broad, shallow gem crown
-    (1.000, 0.580),   # crown rim; sawtooth arches + table capped above
+    (0.600, 0.998),
+    (0.680, 0.996),   # full, near-straight sides through the middle
+    (0.750, 0.993),
+    (0.810, 0.982),
+    (0.860, 0.955),   # broad lid; only now narrowing
+    (0.905, 0.905),
+    (0.945, 0.820),
+    (0.975, 0.750),
+    (1.000, 0.700),   # crown rim (wide); sawtooth arches + table capped above
 ]
 
 # ---------------------------------------------------------------- helpers
