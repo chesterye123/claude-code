@@ -106,9 +106,10 @@ def facet_template(depth):
     return pts
 
 def depth_at(h):
-    """Grooves shallow at the seam, deepen toward the crown and base so the
-    facets pinch toward points (gem cut), not run as straight flutes."""
-    return GROOVE_DEPTH * (0.55 + 1.6 * abs(2.0 * h - 1.0) ** 1.7)
+    """Grooves deep at the base, seam and crown, shallow in the middle of each
+    half -> each facet is a kite/lozenge, and the lid and body read as separate
+    faceted domes that pinch to points at the seam."""
+    return GROOVE_DEPTH * (0.30 + 1.5 * abs(math.cos(2.0 * math.pi * h)))
 
 M = len(facet_template(GROOVE_DEPTH))
 
