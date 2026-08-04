@@ -36,8 +36,8 @@ FRAMES   = int(arg("--frames", "1"))
 ROT_DEG  = float(arg("--rot", "90"))
 DEVICE   = arg("--device", "AUTO").upper()   # AUTO|CPU|CUDA|OPTIX|METAL|HIP|ONEAPI
 
-# Real product dimensions, 50ml jar
-JAR_H = 0.083
+# Real product dimensions, 50ml jar (measured: 70mm tall, 63mm wide)
+JAR_H = 0.070
 JAR_W = JAR_H * 0.90
 
 # ---------------------------------------------------------------- scene reset

@@ -37,10 +37,10 @@ EXPORT_GLB  = arg("--export-glb", "")
 EXPORT_OBJ  = arg("--export-obj", "")
 JOIN_ONE    = "--join" in argv
 
-# --- master dimensions (metres). VERIFY THESE AGAINST THE REAL JAR. ---
-JAR_H   = farg("--height", 0.083)
-W_RATIO = farg("--width-ratio", 0.90)
-HALF_W  = 0.5 * JAR_H * W_RATIO
+# --- master dimensions (metres). Measured: 70mm tall, 63mm wide (ratio 0.90). ---
+JAR_H   = farg("--height", 0.070)       # measured overall height
+W_RATIO = farg("--width-ratio", 0.90)   # 63mm / 70mm
+HALF_W  = 0.5 * JAR_H * W_RATIO         # = 31.5mm, widest radius (dead centre)
 
 # --- form parameters ---
 PLAN_EXP    = farg("--plan-exp", 3.6)       # 2=circle, ~4=rounded square (superellipse)
@@ -49,31 +49,30 @@ PANEL_FRAC  = farg("--panel-frac", 0.85)    # fraction of each sector that's fla
 GROOVE_DEPTH= farg("--groove-depth", 0.12)  # V-groove depth (fraction of local radius)
 TABLE_FRAC  = farg("--table-frac", 0.55)    # flat lid table radius as fraction of crown rim
 RINGS       = iarg("--rings", 160)          # vertical resolution
-SEAM_H      = farg("--seam-h", 0.470)       # height fraction of the gold seam band centre
+SEAM_H      = farg("--seam-h", 0.500)       # seam at dead centre (widest point)
 FOOT        = "--no-foot" not in argv       # draw a thin gold foot ring
 
 # ---------------------------------------------------------------- profile
 # (height fraction 0..1, radius as fraction of HALF_W). Onion: widest at the seam.
 PROFILE = [
-    (0.000, 0.420),   # underside centre
-    (0.020, 0.540),   # base / foot contact
-    (0.055, 0.620),
-    (0.110, 0.720),
-    (0.180, 0.830),
-    (0.260, 0.920),
-    (0.350, 0.975),
-    (0.430, 1.000),
-    (0.470, 1.000),   # -- SEAM, widest
-    (0.510, 1.000),   # lid bulges just above the seam
-    (0.590, 0.985),
-    (0.680, 0.945),
-    (0.760, 0.880),
-    (0.820, 0.795),
-    (0.880, 0.700),
-    (0.930, 0.610),
-    (0.968, 0.520),   # shoulder into the crown
-    (0.990, 0.440),   # crown rim (cushion facets slope up from here)
-    (1.000, 0.400),   # crown rim top; a flat table is capped on above
+    (0.000, 0.440),   # underside centre
+    (0.020, 0.560),   # base / foot contact
+    (0.060, 0.660),
+    (0.120, 0.780),
+    (0.190, 0.880),
+    (0.270, 0.950),
+    (0.360, 0.990),
+    (0.440, 1.000),
+    (0.500, 1.000),   # -- SEAM, widest, dead centre
+    (0.560, 1.000),
+    (0.640, 0.990),   # cushion holds width through the middle third
+    (0.720, 0.950),
+    (0.790, 0.880),
+    (0.850, 0.790),
+    (0.905, 0.685),
+    (0.950, 0.580),
+    (0.982, 0.490),   # shoulder into the crown
+    (1.000, 0.430),   # crown rim; flat table capped on above
 ]
 
 # ---------------------------------------------------------------- helpers
@@ -90,10 +89,10 @@ def profile_r(h):
             return r0 + t * (r1 - r0)
     return PROFILE[-1][1]
 
-def facet_template():
+def facet_template(depth):
     """Angular samples for one ring: broad flat panels + narrow deep V-grooves.
-    Returns [(angle, radius_multiplier)] where the panel edges sit on the
-    superellipse and the groove between panels dips inward by GROOVE_DEPTH."""
+    Returns [(angle, radius_multiplier)]; panel edges on the superellipse, groove
+    valley dipped inward by `depth`."""
     pts = []
     sector = 2 * math.pi / FACETS
     w = sector * PANEL_FRAC
@@ -101,12 +100,16 @@ def facet_template():
         c = (i + 0.5) * sector
         aL, aR = c - w / 2, c + w / 2
         b = (i + 1) * sector                      # boundary (groove valley)
-        for ang, mult in ((aL, 1.0), (aR, 1.0), (b, 1.0 - GROOVE_DEPTH)):
+        for ang, mult in ((aL, 1.0), (aR, 1.0), (b, 1.0 - depth)):
             pts.append((ang, superellipse_r(ang, PLAN_EXP) * mult))
     return pts
 
-TMPL = facet_template()
-M = len(TMPL)
+def depth_at(h):
+    """Grooves shallow at the seam, deepen toward the crown and base so the
+    facets pinch toward points (gem cut), not run as straight flutes."""
+    return GROOVE_DEPTH * (0.55 + 1.6 * abs(2.0 * h - 1.0) ** 1.7)
+
+M = len(facet_template(GROOVE_DEPTH))
 
 # smooth (polished) ring for gold band / foot / inner well
 SMOOTH_SEG = 120
@@ -133,9 +136,10 @@ def build_crystal():
     for k in range(RINGS + 1):
         h = k / RINGS
         pr = profile_r(h)
+        tmpl = facet_template(depth_at(h))        # depth varies with height
         ring = [bm.verts.new((HALF_W * pr * mult * math.cos(a),
                               HALF_W * pr * mult * math.sin(a),
-                              h * JAR_H)) for a, mult in TMPL]
+                              h * JAR_H)) for a, mult in tmpl]
         rings.append(ring)
     for a, b in zip(rings, rings[1:]):
         for i in range(M):
