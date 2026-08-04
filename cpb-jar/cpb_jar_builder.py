@@ -146,26 +146,38 @@ def build_crystal():
         for i in range(M):
             j = (i + 1) % M
             bm.faces.new((a[i], a[j], b[j], b[i]))
-    # crown: a sawtooth of pointed arches (lid-facet tips) rising to a flat table.
+    # crown: two-tier rose cut. Lower tier is a sawtooth of pointed arches (the
+    # lid-facet tips) rising to a ring of PEAKS; upper tier is a band of kite
+    # facets angling in from the peaks to a flat central table.
     # top ring has 3 verts per facet: aL, aR (panel edges) and V (groove valley).
     top = rings[-1]
     N = FACETS
     rim_z = top[0].co.z
-    tz = rim_z + CROWN_RISE * JAR_H
-    table = []
-    for i in range(N):
-        c = (i + 0.5) * (2 * math.pi / N)
-        r = HALF_W * TABLE_FRAC * superellipse_r(c, PLAN_EXP)
-        table.append(bm.verts.new((r * math.cos(c), r * math.sin(c), tz)))
+    peak_z  = rim_z + CROWN_RISE * 0.55 * JAR_H
+    table_z = rim_z + CROWN_RISE * JAR_H
+    def ring_at(rfrac, z):
+        out = []
+        for i in range(N):
+            c = (i + 0.5) * (2 * math.pi / N)
+            r = HALF_W * rfrac * superellipse_r(c, PLAN_EXP)
+            out.append(bm.verts.new((r * math.cos(c), r * math.sin(c), z)))
+        return out
+    peaks = ring_at(TABLE_FRAC + 0.14, peak_z)
+    table = ring_at(TABLE_FRAC, table_z)
     for i in range(N):
         aL, aR, V = top[3 * i], top[3 * i + 1], top[3 * i + 2]
         aL_next = top[(3 * i + 3) % M]
+        Pi, Pn = peaks[i], peaks[(i + 1) % N]
+        bm.faces.new((aL, aR, Pi))            # up-pointing arch (facet tip)
+        bm.faces.new((aR, V, Pi))             # arch shoulder into the valley
+        bm.faces.new((V, aL_next, Pn))        # valley shoulder to next facet
+        bm.faces.new((V, Pn, Pi))             # down-pointing valley face
+    for i in range(N):                        # kite band: peaks -> table
+        Pi, Pn = peaks[i], peaks[(i + 1) % N]
         Ti, Tn = table[i], table[(i + 1) % N]
-        bm.faces.new((aL, aR, Ti))            # up-pointing arch (facet tip)
-        bm.faces.new((aR, V, Ti))             # arch shoulder into the valley
-        bm.faces.new((V, aL_next, Tn))        # valley shoulder to next facet
-        bm.faces.new((V, Tn, Ti))             # down-pointing valley face
+        bm.faces.new((Pi, Pn, Tn, Ti))
     bm.faces.new(list(reversed(table)))       # flat table (monogram sits here)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])   # consistent outward normals for glass
     # bottom: fan the base ring to a recessed centre (rounded foot underside)
     base = rings[0]
     bctr = bm.verts.new((0, 0, -0.006 * JAR_H))
