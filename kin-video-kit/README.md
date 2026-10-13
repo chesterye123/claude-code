@@ -13,6 +13,9 @@ The house standard for every talking-head episode: pacing, text, sound, layout a
 **PIPELINE.md**
 The production stages in order, what each one does, and what to ask Claude for at each one.
 
+**CHANGES.md**
+What was changed to make the four documents agree, and which of those changes are judgement calls.
+
 **Editing/EDITING.md**
 The editing playbook: selects, tightening, pace, zooms, sound, hand-off to motion and grade, review rounds.
 
