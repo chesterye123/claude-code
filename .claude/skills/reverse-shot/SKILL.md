@@ -81,8 +81,8 @@ section into an instruction, cut it.
    money shots; scene-change detection misses them because pointing at something is a low
    visual delta.
 
-7. **Emit the breakdown** in the exact schema below. Then the recreate prompt, then the
-   replication plan.
+7. **Emit the breakdown** in the exact schema below. It ends with the recreate prompt, then
+   the replication plan.
 
 ## Output schema (fixed, always this shape)
 
@@ -119,8 +119,19 @@ AD STRUCTURE (what the video is doing, beat by beat)
 - VO / dialogue spine: the argument in 3 lines
 - Why it works: the one mechanism worth stealing. Not a list. One.
 
+RECREATE PROMPT (paste-ready; the shared look every shot inherits)
+- Target: <generator and model from Higgsfield models_explore> / aspect ratio / seconds per clip
+- Prompt: one paragraph in plain present tense, in this order: subject and action, setting,
+  shot size and angle, camera movement, lens look, lighting, color grade, mood. Use only
+  MEASURED and OBSERVED facts and INFERRED calls at conf 60+; leave lower-confidence calls out
+  instead of guessing. Describe people by role and look, never as the person in the reference.
+  Never write "zoom out" (it triggers a Higgsfield preset and the job will not submit).
+- Avoid: what the generator must not add (on-screen text, logos, extra people, artifacts)
+- Reference frames to attach: cutframes/ filenames to use as style or start frames
+
 REPLICATION PLAN (how we rebuild this without a shoot)
 - Shot-by-shot table: # | timestamp | duration | what happens | generator | prompt seed
+  (each seed starts from the RECREATE PROMPT and changes only what differs in that shot)
 - Generator routing per shot (check Higgsfield models_explore for the current best model).
 - Assets to lock before generating: product sheet, character sheet, set, style ref
 - What will NOT survive AI generation, and the honest workaround for each
