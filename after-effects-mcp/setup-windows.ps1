@@ -76,7 +76,9 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
 }
 
 # Standard installer uses %APPDATA%\Claude; the Microsoft Store build keeps it under Packages.
+# Create the standard folder up front: it doesn't exist until Claude Desktop has been opened once.
 $desktopDirs = @(Join-Path $env:APPDATA 'Claude')
+New-Item -ItemType Directory -Force -Path $desktopDirs[0] | Out-Null
 $desktopDirs += @(Get-ChildItem -LiteralPath (Join-Path $env:LOCALAPPDATA 'Packages') -Directory -Filter 'Claude_*' -ErrorAction SilentlyContinue |
   ForEach-Object { Join-Path $_.FullName 'LocalCache\Roaming\Claude' })
 $merge = @'
@@ -113,7 +115,7 @@ foreach ($desktopDir in $desktopDirs) {
 Remove-Item -LiteralPath $mergeFile -ErrorAction SilentlyContinue
 
 if (-not $registered) {
-  Write-Host '==> No Claude Code CLI or Claude Desktop found. Install Claude Desktop from https://claude.ai/download and run this again.' -ForegroundColor Yellow
+  Write-Host '!!  Could not register with Claude Desktop or Claude Code. Scroll up for the error.' -ForegroundColor Yellow
 }
 
 Write-Host ''
