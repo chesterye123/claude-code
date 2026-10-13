@@ -21,11 +21,31 @@ const __dirname = path.dirname(__filename);
 const SCRIPTS_DIR = path.join(__dirname, "scripts");
 const TEMP_DIR = path.join(__dirname, "temp");
 
+// Resolve the same Documents folder After Effects uses (Folder.myDocuments).
+// On Windows that follows OneDrive folder redirection, so ~/Documents can be
+// a different folder the bridge panel never reads.
+let documentsDir: string | undefined;
+function getDocumentsDir(): string {
+  if (documentsDir) return documentsDir;
+  documentsDir = path.join(os.homedir(), 'Documents');
+  if (process.platform === 'win32') {
+    try {
+      const resolved = execSync(
+        'powershell -NoProfile -NonInteractive -Command "[Console]::OutputEncoding=[Text.Encoding]::UTF8; [Environment]::GetFolderPath(\'MyDocuments\')"',
+        { encoding: 'utf8', windowsHide: true, timeout: 15000 }
+      ).trim();
+      if (resolved) documentsDir = resolved;
+    } catch (error) {
+      console.error("Could not resolve Documents folder, using ~/Documents:", error);
+    }
+  }
+  return documentsDir;
+}
+
 // Get the correct directory for AE bridge files
-// Use ~/Documents/ae-mcp-bridge for reliable cross-process access
+// Use Documents/ae-mcp-bridge for reliable cross-process access
 function getAETempDir(): string {
-  const homeDir = os.homedir();
-  const bridgeDir = path.join(homeDir, 'Documents', 'ae-mcp-bridge');
+  const bridgeDir = path.join(getDocumentsDir(), 'ae-mcp-bridge');
   // Ensure the directory exists
   if (!fs.existsSync(bridgeDir)) {
     fs.mkdirSync(bridgeDir, { recursive: true });

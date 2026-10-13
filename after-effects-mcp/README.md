@@ -1,6 +1,6 @@
 # 🎬 After Effects MCP Server
 
-> **Quick setup (macOS):** run `./setup-mac.sh` from this folder. It builds the server, installs the After Effects panel, and registers the server with Claude Code and/or Claude Desktop. Then follow the three After Effects steps it prints.
+> **Quick setup:** on Windows, double-click `setup-windows.cmd`; on macOS, run `./setup-mac.sh`. Either one builds the server, installs the After Effects panel, and registers the server with Claude Code and/or Claude Desktop. Then follow the three After Effects steps it prints.
 
 ![Node.js](https://img.shields.io/badge/node-%3E=14.x-brightgreen.svg)
 ![Build](https://img.shields.io/badge/build-passing-success)
