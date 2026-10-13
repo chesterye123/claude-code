@@ -79,8 +79,9 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
 # Create the standard folder up front: it doesn't exist until Claude Desktop has been opened once.
 $desktopDirs = @(Join-Path $env:APPDATA 'Claude')
 New-Item -ItemType Directory -Force -Path $desktopDirs[0] | Out-Null
-$desktopDirs += @(Get-ChildItem -LiteralPath (Join-Path $env:LOCALAPPDATA 'Packages') -Directory -Filter 'Claude_*' -ErrorAction SilentlyContinue |
-  ForEach-Object { Join-Path $_.FullName 'LocalCache\Roaming\Claude' })
+# The Store package name varies, so match any package that has a Claude settings folder.
+$desktopDirs += @(Get-Item -Path "$env:LOCALAPPDATA/Packages/*/LocalCache/Roaming/Claude" -ErrorAction SilentlyContinue |
+  Where-Object { $_.PSIsContainer } | ForEach-Object { $_.FullName })
 $merge = @'
 const fs = require('fs');
 const { AE_MCP_CONFIG, AE_MCP_NAME, AE_MCP_NODE, AE_MCP_SERVER } = process.env;
